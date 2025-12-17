@@ -11,7 +11,7 @@ const EMOJI = "👍";
 const REQUIRED_COUNT = 2;
 const dinnerEaters = new Map();
 const dinnerMakers = new Map();
-const testing = true;
+const testing = false;
 
 const client = new Client({
   intents: [
