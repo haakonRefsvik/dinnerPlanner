@@ -11,7 +11,7 @@ const EMOJI = "👍";
 const REQUIRED_COUNT = 2;
 const dinnerEaters = new Map();
 const dinnerMakers = new Map();
-const testing = true;
+const testing = false;
 
 const client = new Client({
   intents: [
@@ -23,8 +23,8 @@ const client = new Client({
   partials: ["MESSAGE", "CHANNEL", "REACTION"],
 });
 
-let lastMessageId = null;
 let activeUsers = new Map(); // Track users who send messages
+let userMap = new Map(); // user.username: user.id
 
 client.once("clientReady", () => {
   console.log(`Logged in as ${client.user.tag}`);
@@ -144,6 +144,7 @@ async function checkResults(channel, botMessage) {
   if (reaction) {
     const users = await reaction.users.fetch(); // fetch all users who reacted
     reactedUsers = users.filter((u) => !u.bot).map((u) => `${u.username}`);
+    reactedUsers.forEach((u) => userMap.set(u.username, u.id));
   }
 
   const cannotMake = [];
@@ -152,6 +153,7 @@ async function checkResults(channel, botMessage) {
   const sentUsers = [];
   for (const [userId, content] of activeUsers) {
     const user = await client.users.fetch(userId);
+    userMap.set(user.username, user.id);
     sentUsers.push(`${user.username}`);
     /** @type {string} */
     const c = content;
@@ -169,6 +171,13 @@ async function checkResults(channel, botMessage) {
   const total = allParticipantList.length;
   // Send summary to channel
   const chefs = findChef(allParticipantList, cannotMake, canMake);
+  const mentions = chefs
+    .map((username) => {
+      const id = userMap.get(username);
+      return id ? `<@${id}>` : username;
+    })
+    .join(", ");
+
   log(canMake, cannotMake, chefs); // log for testing
 
   const randomDinner =
@@ -176,7 +185,7 @@ async function checkResults(channel, botMessage) {
 
   let dinnerSummary = `@everyone 🍽️ Dagens middag:`;
   dinnerSummary += `\n- 🤑 Gjester: ${allParticipantList.join(", ")}`;
-  dinnerSummary += `\n- 🧑‍🍳 Dagens chef(s): ${chefs.join(", ")}`;
+  dinnerSummary += `\n- 🧑‍🍳 Dagens chef(s): ${mentions}`;
   dinnerSummary += `\n- 🍳 Middagsforslag: ${randomDinner}`;
 
   if (testing || (total >= REQUIRED_COUNT && chefs.length > 0)) {
