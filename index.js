@@ -29,17 +29,25 @@ let userMap = new Map(); // user.username: user.id
 client.once("clientReady", () => {
   console.log(`Logged in as ${client.user.tag}`);
 
-  // For testing: every minute. Replace with cron.schedule("0 9 * * *") for 9:00 AM daily
   if (testing) {
     cron.schedule("* * * * *", async () => {
       askForDinner();
     });
   } else {
-    cron.schedule("* 12 * * *", async () => {
+    cron.schedule("0 12 * * *", async () => {
       askForDinner();
+    });
+    cron.schedule("0 15 * * *", async () => {
+      reminder();
     });
   }
 });
+
+async function reminder() {
+  const channel = await client.channels.fetch(CHANNEL_ID);
+  let msg = `@everyone 💬\nHusk å si respondere innen 16:00!`;
+  await channel.send(msg);
+}
 
 async function askForDinner() {
   const channel = await client.channels.fetch(CHANNEL_ID);
