@@ -45,7 +45,7 @@ client.once("clientReady", () => {
 
 async function reminder() {
   const channel = await client.channels.fetch(CHANNEL_ID);
-  let msg = `@everyone 💬\nHusk å si respondere innen 16:00!`;
+  let msg = `@everyone 💬\nHusk å respondere innen 16:00 🧑‍🍳`;
   await channel.send(msg);
 }
 
